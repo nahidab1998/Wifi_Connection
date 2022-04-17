@@ -34,10 +34,10 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             // Check to see if Wi-Fi is enabled and notify appropriate activity
             int status = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
 
-            if(status == WifiP2pManager.WIFI_P2P_STATE_ENABLED)
-                Toast.makeText(activity.getApplicationContext(), "WiFi is ON", Toast.LENGTH_SHORT).show();
-
-            else Toast.makeText(activity.getApplicationContext(), "WiFi is OFF", Toast.LENGTH_SHORT).show();
+            if(status == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
+//                Toast.makeText(activity.getApplicationContext(), "وای فای روشن است", Toast.LENGTH_SHORT).show();
+            }
+            else Toast.makeText(activity.getApplicationContext(), "وای فای خود را روشن کنید ", Toast.LENGTH_SHORT).show();
 
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             // Call WifiP2pManager.requestPeers() to get a list of current peers
@@ -51,7 +51,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
             if(networkInfo.isConnected()) manager.requestConnectionInfo(channel, activity.connectionInfoListener);
-            else activity.txt_status.setText("Devicd Disconnected");
+            else activity.txt_status.setText("اتصال دستگاه قطع شد");
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             // Respond to this device's wifi state changing

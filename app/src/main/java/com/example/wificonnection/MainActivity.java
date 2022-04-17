@@ -1,6 +1,7 @@
 package com.example.wificonnection;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -8,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -21,11 +23,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,10 +50,12 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
-     TextView txt_send , txt_discover , txt_off_on , txt_status ;
+     TextView  txt_discover , txt_status ;
     private TextView txt_massage ;
     private EditText editText ;
     private ListView listView ;
+    private ImageView img_send ;
+    private SwitchCompat  txt_off_on ;
 
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
@@ -65,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
 
     Serverclas serverclas;
     ClientClass clientClass;
+    private String massage , status ;
+    private WifiManager wifi;
+    private MediaPlayer player;
 
     boolean ishost;
     int PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION = 100;
@@ -76,71 +86,100 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initId();
+        wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
+        if(wifi.isWifiEnabled()) txt_off_on.setChecked(true);
         exqlistener();
 
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                                           int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if (requestCode == PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION
-//                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//            // Do something with granted permission
-////            mWifiListener.getScanningResults();
-//            Toast.makeText(this, "request", Toast.LENGTH_SHORT).show();
-//        }
-//    }
+
 
     private void exqlistener() {
 
-        txt_off_on.setOnClickListener(new View.OnClickListener() {
+        txt_off_on.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-                ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
-                if (!mWifi.isConnected()) {
-                    // Do whatever
-                    Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
-                    startActivityForResult(intent , 1);
+                if(txt_off_on.isChecked()){
+                    Toast.makeText(MainActivity.this, "turn on", Toast.LENGTH_SHORT).show();
+                    wifi.setWifiEnabled(true);
+
+
+                }else {
+                    Toast.makeText(MainActivity.this, "turn off", Toast.LENGTH_SHORT).show();
+                    wifi.setWifiEnabled(false);
+
                 }
-                else {
-                    Toast.makeText(MainActivity.this, "وای فای روشن است", Toast.LENGTH_SHORT).show();
-//                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-//                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-//                                PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION);
-//                        //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
+
+
+            }
+        });
+
+//        txt_off_on.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+//                NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 //
-//                    }else{
-////                        getScanningResults();
-//                        //do something, permission was previously granted; or legacy device
-//                        Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
-//                    }
-                }
+//                if (!mWifi.isConnected()) {
+//                    // Do whatever
+////                    Intent intent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+////                    startActivityForResult(intent , 1);
+//                    WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+//                    wifi.setWifiEnabled(true);
+////                    txt_off_on.setText("خاموش");
+//
+//                }
+//                else {
+//                    WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+//                    wifi.setWifiEnabled(false);
+////                    txt_off_on.setText("روشن");
+//
+//
+//
+////                    Toast.makeText(MainActivity.this, "وای فای روشن است", Toast.LENGTH_SHORT).show();
+////                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+////                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+////                                PERMISSIONS_REQUEST_CODE_ACCESS_COARSE_LOCATION);
+////                        //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
+////
+////                    }else{
+//////                        getScanningResults();
+////                        //do something, permission was previously granted; or legacy device
+////                        Toast.makeText(MainActivity.this, "hello", Toast.LENGTH_SHORT).show();
+////                    }
+//                }
+//
+//            }
+//        });
 
-            }
-        });
 
 
-
-        txt_discover.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-                    @Override
-                    public void onSuccess() {
-                        txt_status.setText("Discovery Started");
-                    }
-
-                    @Override
-                    public void onFailure(int i) {
-                        txt_status.setText("Discovery not Started");
-                    }
-                });
-            }
-        });
+//        txt_discover.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+//                NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+//
+//                if (mWifi.isConnected()) {
+//                    manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+//                        @Override
+//                        public void onSuccess() {
+//                            txt_status.setText("دستگاه یافت شد");
+//                        }
+//
+//                        @Override
+//                        public void onFailure(int i) {
+//                            txt_status.setText("دستگاهی یافت نشد ");
+//                        }
+//                    });
+//                }
+//                else {
+//                    Toast.makeText(MainActivity.this, "وای فای خود را روشن کنید", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -151,35 +190,54 @@ public class MainActivity extends AppCompatActivity {
                 manager.connect(channel, config, new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
-                        txt_status.setText("connected : " + device.deviceAddress);
+                        txt_status.setText("متصل شد به : " + device.deviceAddress);
                     }
 
                     @Override
                     public void onFailure(int i) {
-                        txt_status.setText("Not connected");
+                        txt_status.setText("اتصال برقرار نیست");
                     }
                 });
             }
         });
 
-        txt_send.setOnClickListener(new View.OnClickListener() {
+        img_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ExecutorService executor  = Executors.newSingleThreadExecutor();
-                String msg = editText.getText().toString();
-                executor.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (msg != null && ishost)
-                        {
-                            serverclas.write(msg.getBytes());
-//                            Toast.makeText(MainActivity.this, "server", Toast.LENGTH_SHORT).show();
-                        }else if (msg != null && !ishost)
-                        {
-                            clientClass.write(msg.getBytes());
-                        }
+
+                massage = editText.getText().toString();
+                status = txt_status.getText().toString();
+
+                if(TextUtils.isEmpty(massage)){
+
+                    Toast.makeText(MainActivity.this, "پیغام خود را بنویسید", Toast.LENGTH_SHORT).show();
+
+                }else {
+                    if (status =="میزبان" || status == "مشتری"){
+
+                        ExecutorService executor  = Executors.newSingleThreadExecutor();
+                        String msg = editText.getText().toString();
+                        executor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (msg != null && ishost)
+                                {
+                                    serverclas.write(msg.getBytes());
+
+                                }else if (msg != null && !ishost)
+                                {
+
+                                    clientClass.write(msg.getBytes());
+                                }
+                            }
+                        });
+//                        Toast.makeText(MainActivity.this, "ارسال شد", Toast.LENGTH_SHORT).show();
+
+                    }else {
+                        Toast.makeText(MainActivity.this, "اتصال برقرار نیست", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+
             }
         });
     }
@@ -241,6 +299,10 @@ public class MainActivity extends AppCompatActivity {
                                     public void run() {
                                         String tempMSG = new String(buffer , 0 , finalBytes);
                                         txt_massage.setText(tempMSG);
+                                        player= MediaPlayer.create(MainActivity.this,R.raw.notification);
+                                        player.start();
+                                        txt_massage.setTextColor(getResources().getColor(R.color.matn));
+
                                         editText.setText("");
                                     }
                                 });
@@ -303,6 +365,7 @@ public class MainActivity extends AppCompatActivity {
                                    public void run() {
                                       String tempMSG = new String(buffer, 0 ,finalbytes);
                                       txt_massage.setText(tempMSG);
+                                       txt_massage.setTextColor(getResources().getColor(R.color.matn));
                                        editText.setText("");
                                    }
                                });
@@ -317,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initId() {
-        txt_send = findViewById(R.id.bt_send);
+        img_send = findViewById(R.id.bt_send);
         txt_discover = findViewById(R.id.bt_listen);
         txt_off_on = findViewById(R.id.bt_offon);
         editText = findViewById(R.id.editxt_message);
@@ -358,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
             listView.setAdapter(adapter);
 
             if (peers.size() == 0){
-                txt_status.setText("no Device found");
+                txt_status.setText("دستگاهی یافت نشد");
                 return;
             }
         }
@@ -370,18 +433,18 @@ public class MainActivity extends AppCompatActivity {
             final InetAddress groupOwnerAddress = wifiP2pInfo.groupOwnerAddress;
             if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner)
             {
-                txt_status.setText("host");
+                txt_status.setText("میزبان");
                 ishost = true;
                 serverclas = new Serverclas();
                 serverclas.start();
             }else if (wifiP2pInfo.groupFormed){
 
-                txt_status.setText("client");
+                txt_status.setText("مشتری");
                 ishost = false;
                 clientClass = new ClientClass(groupOwnerAddress);
                 clientClass.start();
             }
         }
     };
-    
+
 }
